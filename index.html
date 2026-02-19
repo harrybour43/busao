@@ -15,41 +15,16 @@
             flex-direction: column;
             align-items: center;
         }
-        h1 {
-            color: #ffffff;
-            margin-bottom: 30px;
-            font-weight: 300;
-            letter-spacing: 1px;
-        }
-        .container {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            width: 100%;
-            max-width: 600px;
-        }
-        .card {
-            background-color: #1e1e1e;
-            border-left: 5px solid #4caf50;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-        }
+        h1 { color: #ffffff; margin-bottom: 30px; font-weight: 300; letter-spacing: 1px; text-align: center; }
+        .container { display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 600px; }
+        .card { background-color: #1e1e1e; border-left: 5px solid #4caf50; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
         .card.past { border-left-color: #888; opacity: 0.8; }
         .card.today { border-left-color: #e91e63; background-color: #2a1b20; transform: scale(1.02); }
         .card.next { border-left-color: #2196f3; }
-        
-        .status {
-            font-size: 0.85em;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
+        .status { font-size: 0.85em; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; font-weight: bold; }
         .past .status { color: #aaaaaa; }
         .today .status { color: #ff4081; }
         .next .status { color: #64b5f6; }
-
         .date { font-size: 1.2em; margin-bottom: 5px; color: #fff; }
         .details { font-size: 1em; color: #cccccc; line-height: 1.5; }
         .highlight { font-weight: bold; color: #ffffff; }
@@ -62,17 +37,98 @@
         </div>
 
     <script>
-        // Array com os dados extraídos da sua planilha
-        // Você pode adicionar o resto das aulas seguindo este mesmo formato
-        const aulas = [
-            { data: '2026-02-11', uc: 'UC13 - Elaborar portfólio fotográfico', docente: 'Marcella Camillo', aula: '4' },
-            { data: '2026-02-12', uc: 'UC13 - Elaborar portfólio fotográfico', docente: 'Marcella Camillo', aula: '5' },
-            { data: '2026-02-19', uc: 'UC11 - Paisagem, Arquitetura e Interiores', docente: 'Paula Lira', aula: '1' },
-            { data: '2026-02-23', uc: 'UC10 - Propaganda e Publicidade', docente: 'Guilherme Correia', aula: '1' },
-            { data: '2026-02-24', uc: 'UC13 - Elaborar portfólio fotográfico', docente: 'Barbara Milano', aula: '6' },
-            { data: '2026-02-25', uc: 'UC10 - Propaganda e Publicidade', docente: 'Guilherme Correia', aula: '2' },
-            { data: '2026-02-26', uc: 'UC11 - Paisagem, Arquitetura e Interiores', docente: 'Paula Lira', aula: '2' }
+        // Dicionário com os nomes completos das UCs
+        const nomesUC = {
+            "UC1": "Captar imagens fotográficas digitais", "UC2": "Iluminar cenas fotográficas",
+            "UC3": "Realizar revelação digital", "UC4": "Manipular imagens fotográficas digitais",
+            "UC5": "Finalizar imagens digitais", "UC6": "Captar vídeos com equipamentos fotográficos",
+            "UC7": "Fotojornalismo e documental", "UC8": "Social", "UC9": "Moda e Editoriais",
+            "UC10": "Propaganda e Publicidade", "UC11": "Paisagem, Arquitetura e Interiores",
+            "UC12": "Realizar ensaios fotográficos", "UC13": "Elaborar portfólio fotográfico",
+            "UC14": "Projeto Integrador"
+        };
+
+        // Lista completa de aulas extraída da sua planilha
+        const rawAulas = [
+            "2025-04-14|UC4|Marcella Camillo|1", "2025-04-15|UC1|Paula Lira|1", "2025-04-16|UC1|Paula Lira|2",
+            "2025-04-17|UC3|Guilherme Correia|1", "2025-04-22|UC1|Paula Lira|3", "2025-04-23|UC1|Paula Lira|4",
+            "2025-04-24|UC3|Guilherme Correia|2", "2025-04-28|UC2|Giovani Pagliusi|1", "2025-04-29|UC1|Paula Lira|5",
+            "2025-04-30|UC1|Paula Lira|6", "2025-05-06|UC14|Paula Lira|1", "2025-05-07|UC1|Paula Lira|7",
+            "2025-05-08|UC3|Guilherme Correia|3", "2025-05-12|UC1|Marcella Camillo|8", "2025-05-13|UC1|Paula Lira|9",
+            "2025-05-14|UC1|Paula Lira|10", "2025-05-15|UC1|Marcella Camillo|11", "2025-05-19|UC3|Flavia Guedes|4",
+            "2025-05-20|UC1|Paula Lira|12", "2025-05-21|UC14|Paula Lira|2", "2025-05-22|UC1|Marcella Camillo|13",
+            "2025-05-26|UC3|Flavia Guedes|5", "2025-05-27|UC3|Flavia Guedes|6", "2025-05-28|UC1|Paula Lira|14",
+            "2025-05-29|UC8|Marcella Camillo|1", "2025-06-02|UC1|Paula Lira|15", "2025-06-03|UC3|Guilherme Correia|7",
+            "2025-06-04|UC7|Paula Lira|1", "2025-06-05|UC7|Paula Lira|2", "2025-06-09|UC3|Flavia Guedes|8",
+            "2025-06-10|UC2|Marcella Camillo|2", "2025-06-11|UC7|Paula Lira|3", "2025-06-12|UC7|Paula Lira|4",
+            "2025-06-16|UC3|Flavia Guedes|9", "2025-06-17|UC8|Marcella Camillo|2", "2025-06-18|UC7|Paula Lira|5",
+            "2025-06-23|UC8|Marcella Camillo|3", "2025-06-24|UC2|Marcella Camillo|3", "2025-06-25|UC7|Paula Lira|6",
+            "2025-06-26|UC14|Guilherme Correia|3", "2025-06-30|UC8|Marcella Camillo|4", "2025-07-01|UC2|Marcella Camillo|4",
+            "2025-07-02|UC7|Paula Lira|7", "2025-07-03|UC7|Paula Lira|8", "2025-07-07|UC8|Marcella Camillo|5",
+            "2025-07-08|UC2|Marcella Camillo|5", "2025-07-28|UC5|Flavia Guedes|1", "2025-07-29|UC2|Marcella Camillo|6",
+            "2025-07-30|UC8|Marcella Camillo|6", "2025-07-31|UC8|Guilherme Correia|7", "2025-08-04|UC4|Flavia Guedes|2",
+            "2025-08-05|UC2|Marcella Camillo|7", "2025-08-07|UC4|Guilherme Correia|3", "2025-08-11|UC4|Flavia Guedes|4",
+            "2025-08-12|UC8|Giovani Pagliusi|8", "2025-08-13|UC2|Marcella Camillo|8", "2025-08-14|UC8|Guilherme Correia|9",
+            "2025-08-18|UC4|Flavia Guedes|5", "2025-08-19|UC2|Marcella Camillo|9", "2025-08-20|UC8|Marcella Camillo|10",
+            "2025-08-21|UC4|Guilherme Correia|6", "2025-08-25|UC8|Marcella Camillo|11", "2025-08-26|UC14|Marcella Camillo|4",
+            "2025-08-27|UC8|Marcella Camillo|12", "2025-08-28|UC8|Marcella Camillo|13", "2025-09-01|UC8|Marcella Camillo|14",
+            "2025-09-02|UC2|Marcella Camillo|10", "2025-09-03|UC7|Paula Lira|9", "2025-09-04|UC8|Jota Santos|15",
+            "2025-09-08|UC8|Marcella Camillo|16", "2025-09-10|UC7|Paula Lira|10", "2025-09-11|UC2|Marcella Camillo|11",
+            "2025-09-15|UC2|Marcella Camillo|12", "2025-09-16|UC6|Guilherme Correia|1", "2025-09-17|UC8|Marcella Camillo|17",
+            "2025-09-18|UC7|Paula Lira|11", "2025-09-22|UC7|Marcella Camillo|12", "2025-09-23|UC9|Marcella Camillo|1",
+            "2025-09-24|UC9|Marcella Camillo|2", "2025-09-29|UC9|Marcella Camillo|3", "2025-09-30|UC6|Guilherme Correia|2",
+            "2025-10-01|UC8|Jota Santos|18", "2025-10-02|UC7|Paula Lira|13", "2025-10-06|UC9|Marcella Camillo|4",
+            "2025-10-07|UC4|Flavia Guedes|7", "2025-10-08|UC7|Jota Santos|14", "2025-10-09|UC7|Paula Lira|15",
+            "2025-10-13|UC9|Marcella Camillo|5", "2025-10-14|UC5|Flavia Guedes|2", "2025-10-15|UC7|Jota Santos|16",
+            "2025-10-16|UC7|Paula Lira|17", "2025-10-20|UC6|Guilherme Correia|3", "2025-10-22|UC7|Marcella Camillo|18",
+            "2025-10-23|UC14|Paula Lira|5", "2025-10-27|UC9|Marcella Camillo|6", "2025-10-28|UC5|Flavia Guedes|3",
+            "2025-10-29|UC12|Marcella Camillo|1", "2025-10-30|UC6|Guilherme Correia|4", "2025-11-03|UC12|Marcella Camillo|2",
+            "2025-11-04|UC4|Flavia Guedes|8", "2025-11-05|UC6|Guilherme Correia|5", "2025-11-06|UC12|Jota Santos|3",
+            "2025-11-10|UC12|Marcella Camillo|4", "2025-11-11|UC12|Marcella Camillo|5", "2025-11-12|UC12|Marcella Camillo|6",
+            "2025-11-13|UC12|Marcella Camillo|7", "2025-11-18|UC4|Flavia Guedes|9", "2025-11-19|UC12|Jota Santos|8",
+            "2025-11-24|UC6|Guilherme Correia|6", "2025-11-25|UC4|Flavia Guedes|10", "2025-11-26|UC12|Marcella Camillo|9",
+            "2025-11-27|UC6|Guilherme Correia|7", "2025-12-01|UC6|Guilherme Correia|8", "2025-12-02|UC12|Marcella Camillo|10",
+            "2025-12-03|UC12|Marcella Camillo|11", "2026-01-26|UC12|Marcella Camillo|12", "2026-01-27|UC13|Marcella Camillo|1",
+            "2026-01-28|UC5|Guilherme Correia|4", "2026-01-29|UC5|Guilherme Correia|5", "2026-02-02|UC5|Guilherme Correia|6",
+            "2026-02-03|UC13|Barbara Milano|2", "2026-02-04|UC5|Jota Santos|7", "2026-02-05|UC5|Guilherme Correia|8",
+            "2026-02-09|UC6|Guilherme Correia|9", "2026-02-10|UC13|Barbara Milano|3", "2026-02-11|UC13|Marcella Camillo|4",
+            "2026-02-12|UC13|Marcella Camillo|5", "2026-02-19|UC11|Paula Lira|1", "2026-02-23|UC10|Guilherme Correia|1",
+            "2026-02-24|UC13|Barbara Milano|6", "2026-02-25|UC10|Guilherme Correia|2", "2026-02-26|UC11|Paula Lira|2",
+            "2026-03-02|UC10|Guilherme Correia|3", "2026-03-03|UC14|Flavia Guedes|6", "2026-03-04|UC10|Guilherme Correia|4",
+            "2026-03-05|UC10|Jota Santos|5", "2026-03-09|UC10|Guilherme Correia|6", "2026-03-10|UC4|Flavia Guedes|11",
+            "2026-03-11|UC10|Guilherme Correia|7", "2026-03-12|UC5|Jota Santos|9", "2026-03-16|UC11|Paula Lira|3",
+            "2026-03-17|UC4|Flavia Guedes|12", "2026-03-18|UC9|Jota Santos|7", "2026-03-19|UC11|Paula Lira|4",
+            "2026-03-23|UC10|Guilherme Correia|8", "2026-03-24|UC4|Flavia Guedes|13", "2026-03-25|UC9|Jota Santos|8",
+            "2026-03-26|UC13|Marcella Camillo|7", "2026-03-30|UC11|Paula Lira|5", "2026-03-31|UC11|Paula Lira|6",
+            "2026-04-01|UC9|Jota Santos|9", "2026-04-02|UC5|Jota Santos|10", "2026-04-06|UC10|Guilherme Correia|9",
+            "2026-04-07|UC4|Flavia Guedes|14", "2026-04-08|UC10|Guilherme Correia|10", "2026-04-09|UC10|Guilherme Correia|11",
+            "2026-04-13|UC11|Guilherme Correia|7", "2026-04-14|UC11|Paula Lira|8", "2026-04-15|UC11|Paula Lira|9",
+            "2026-04-16|UC11|Paula Lira|10", "2026-04-22|UC10|Guilherme Correia|12", "2026-04-23|UC9|Jota Santos|10",
+            "2026-04-27|UC4|Flavia Guedes|15", "2026-04-28|UC11|Paula Lira|11", "2026-04-29|UC14|Marcella Camillo|7",
+            "2026-04-30|UC13|Marcella Camillo|8", "2026-05-04|UC4|Guilherme Correia|16", "2026-05-05|UC11|Paula Lira|12",
+            "2026-05-06|UC11|Guilherme Correia|13", "2026-05-07|UC9|Jota Santos|11", "2026-05-11|UC11|Paula Lira|14",
+            "2026-05-12|UC4|Guilherme Correia|17", "2026-05-13|UC10|Guilherme Correia|13", "2026-05-14|UC9|Jota Santos|12",
+            "2026-05-18|UC13|Marcella Camillo|9", "2026-05-19|UC4|Guilherme Correia|18", "2026-05-20|UC11|Guilherme Correia|15",
+            "2026-05-21|UC9|Jota Santos|13", "2026-05-25|UC4|Guilherme Correia|19", "2026-05-26|UC10|Guilherme Correia|14",
+            "2026-05-27|UC9|Jota Santos|14", "2026-05-28|UC11|Guilherme Correia|16", "2026-06-01|UC5|Marcella Camillo|11",
+            "2026-06-02|UC4|Guilherme Correia|20", "2026-06-03|UC10|Guilherme Correia|15", "2026-06-08|UC11|Guilherme Correia|17",
+            "2026-06-09|UC4|Flavia Guedes|21", "2026-06-10|UC5|Guilherme Correia|12", "2026-06-11|UC9|Jota Santos|15",
+            "2026-06-15|UC11|Guilherme Correia|18", "2026-06-16|UC5|Flavia Guedes|13", "2026-06-17|UC10|Guilherme Correia|16",
+            "2026-06-18|UC9|Jota Santos|16", "2026-06-22|UC5|Flavia Guedes|14", "2026-06-23|UC5|Flavia Guedes|15",
+            "2026-06-24|UC9|Jota Santos|17", "2026-06-25|UC9|Jota Santos|18", "2026-06-30|UC10|Guilherme Correia|17",
+            "2026-07-01|UC13|Marcella Camillo|10", "2026-07-02|UC14|Jota Santos|8"
         ];
+
+        // Transforma as strings no formato esperado
+        const aulas = rawAulas.map(linha => {
+            const [data, uc, docente, aula] = linha.split('|');
+            return {
+                data: data,
+                uc: `${uc} - ${nomesUC[uc] || ''}`,
+                docente: docente,
+                aula: aula
+            };
+        });
 
         function formatarDataBR(dataISO) {
             const [ano, mes, dia] = dataISO.split('-');
@@ -80,7 +136,6 @@
         }
 
         function renderizar() {
-            // Pega a data de hoje no formato YYYY-MM-DD (ajustando para fuso horário local)
             const hoje = new Date();
             const offset = hoje.getTimezoneOffset() * 60000;
             const dataHojeStr = (new Date(hoje - offset)).toISOString().split('T')[0];
@@ -89,16 +144,13 @@
             let aulaHoje = null;
             let proximaAula = null;
 
-            // Ordena o array por data para garantir a cronologia
-            aulas.sort((a, b) => a.data.localeCompare(b.data));
-
             for (let aula of aulas) {
                 if (aula.data < dataHojeStr) {
-                    ultimaAula = aula; // Vai sobrescrevendo até achar a última do passado
+                    ultimaAula = aula;
                 } else if (aula.data === dataHojeStr) {
                     aulaHoje = aula;
                 } else if (aula.data > dataHojeStr && !proximaAula) {
-                    proximaAula = aula; // Pega apenas a primeira do futuro
+                    proximaAula = aula;
                 }
             }
 
@@ -131,7 +183,7 @@
                 html += `
                 <div class="card today" style="background-color: #1e1e1e; border-color: #444;">
                     <div class="status" style="color: #aaa;">Hoje</div>
-                    <div class="details">Sem aulas programadas para hoje. Aproveite o descanso (ou vá editar fotos)!</div>
+                    <div class="details">Sem aulas programadas para hoje!</div>
                 </div>`;
             }
 
@@ -144,6 +196,15 @@
                         <span class="highlight">${proximaAula.uc}</span><br>
                         Docente: ${proximaAula.docente} | Aula ${proximaAula.aula}
                     </div>
+                </div>`;
+            }
+
+            // Exibe mensagem especial caso o curso já tenha acabado
+            if (!proximaAula && !aulaHoje && ultimaAula && dataHojeStr > "2026-07-02") {
+                 html += `
+                <div class="card today" style="border-left-color: #ffd700;">
+                    <div class="status" style="color: #ffd700;">🎉 Curso Finalizado</div>
+                    <div class="details">Parabéns! Você concluiu o cronograma.</div>
                 </div>`;
             }
 
