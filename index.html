@@ -16,7 +16,7 @@
             align-items: center;
         }
         h1 { color: #ffffff; margin-bottom: 20px; font-weight: 300; letter-spacing: 1px; text-align: center; }
-        .container { display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 600px; }
+        .container { display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 600px; }
         
         /* Estilos da barra de pesquisa */
         .search-box {
@@ -38,7 +38,7 @@
 
         /* Estilos dos Cards Padrão */
         .card { background-color: #1e1e1e; border-left: 5px solid #4caf50; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
-        .card.past { border-left-color: #888; opacity: 0.8; }
+        .card.past { border-left-color: #888; opacity: 0.7; }
         .card.today { border-left-color: #e91e63; background-color: #2a1b20; transform: scale(1.02); }
         .card.next { border-left-color: #2196f3; }
         .status { font-size: 0.85em; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; font-weight: bold; }
@@ -48,6 +48,15 @@
         .date { font-size: 1.2em; margin-bottom: 5px; color: #fff; }
         .details { font-size: 1em; color: #cccccc; line-height: 1.5; }
         .highlight { font-weight: bold; color: #ffffff; }
+
+        .titulo-semana {
+            color: #fff;
+            border-bottom: 2px solid #4caf50;
+            padding-bottom: 10px;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
 
         /* Estilos da Lista de Pesquisa */
         .uc-title { color: #ff9800; font-size: 1.1em; margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px;}
@@ -194,31 +203,44 @@
             };
         });
 
-        // Função para determinar o status da aula considerando o horário (12:00)
-        function getStatusAula(dataAula) {
+        // Retorna a string no formato YYYY-MM-DD
+        function toISODate(d) {
+            const ano = d.getFullYear();
+            const mes = String(d.getMonth() + 1).padStart(2, '0');
+            const dia = String(d.getDate()).padStart(2, '0');
+            return `${ano}-${mes}-${dia}`;
+        }
+
+        // Função para formatação visual (ex: 14/04/2025)
+        function formatarDataBR(dataISO) {
+            const [ano, mes, dia] = dataISO.split('-');
+            return `${dia}/${mes}/${ano}`;
+        }
+
+        // Converte a data (YYYY-MM-DD) para o nome do dia da semana
+        function getDiaDaSemana(dataISO) {
+            const partes = dataISO.split('-');
+            const data = new Date(partes[0], partes[1] - 1, partes[2], 12, 0, 0); // Define 12h para evitar fuso
+            const dias = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+            return dias[data.getDay()];
+        }
+
+        // Função usada EXCLUSIVAMENTE para a busca por UC (considerando o limite das 12h)
+        function getStatusAulaPesquisa(dataAula) {
             const agora = new Date();
-            // Montando a string YYYY-MM-DD usando a data local para evitar bugs de UTC
-            const ano = agora.getFullYear();
-            const mes = String(agora.getMonth() + 1).padStart(2, '0');
-            const dia = String(agora.getDate()).padStart(2, '0');
-            const hojeStr = `${ano}-${mes}-${dia}`;
+            const hojeStr = toISODate(agora);
 
             if (dataAula < hojeStr) {
                 return "passada";
             } else if (dataAula === hojeStr) {
                 if (agora.getHours() >= 12) {
-                    return "passada"; // Passou das 12h, a aula de hoje acabou.
+                    return "passada"; 
                 } else {
-                    return "hoje"; // Ainda é antes das 12h, a aula está ativa/vai começar.
+                    return "hoje"; 
                 }
             } else {
                 return "futura";
             }
-        }
-
-        function formatarDataBR(dataISO) {
-            const [ano, mes, dia] = dataISO.split('-');
-            return `${dia}/${mes}/${ano}`;
         }
 
         function popularSelect() {
@@ -248,13 +270,12 @@
 
             const aulasDaUC = aulas.filter(a => a.codigoUC === ucSelecionada);
             
-            // Verifica se TODAS as aulas desta UC já estão no passado
-            const todasEncerradas = aulasDaUC.every(aula => getStatusAula(aula.data) === "passada");
+            // Usa o status restrito por horário aqui
+            const todasEncerradas = aulasDaUC.every(aula => getStatusAulaPesquisa(aula.data) === "passada");
 
             let html = `<div class="card" style="border-left-color: #ff9800;">
                             <div class="uc-title">${nomesUC[ucSelecionada]}</div>`;
             
-            // Adiciona o banner verde se a UC acabou
             if (todasEncerradas && aulasDaUC.length > 0) {
                 html += `<div class="uc-encerrada">✅ UC Encerrada para a Turma 43M</div>`;
             }
@@ -264,7 +285,7 @@
             let encontrouProxima = false;
 
             aulasDaUC.forEach(aula => {
-                const status = getStatusAula(aula.data);
+                const status = getStatusAulaPesquisa(aula.data);
                 let liClass = "";
                 let badge = "";
 
@@ -292,83 +313,88 @@
             painelPesquisa.innerHTML = html;
         });
 
-        // Renderiza o Painel Geral Principal
-        function renderizarGeral() {
-            let ultimaAula = null;
-            let aulaHoje = null;
-            let proximaAula = null;
+        // Renderiza o Painel Geral Principal (Focado na Semana Atual)
+        function renderizarSemanaAtual() {
+            const agora = new Date();
+            const hojeStr = toISODate(agora);
 
-            for (let aula of aulas) {
-                const status = getStatusAula(aula.data);
-                
-                if (status === "passada") {
-                    ultimaAula = aula; // Vai substituindo até ficar com a mais recente do passado
-                } else if (status === "hoje") {
-                    aulaHoje = aula;
-                } else if (status === "futura" && !proximaAula) {
-                    proximaAula = aula; // Pega apenas a primeira do futuro
-                }
-            }
+            const diaDaSemana = agora.getDay(); // 0 = Dom, 1 = Seg ... 6 = Sáb
+            // Se hoje for domingo (0), a segunda-feira desta semana foi a 6 dias atrás.
+            // Para outros dias, a diferença até segunda é: 1 - diaDaSemana
+            const diferencaParaSegunda = (diaDaSemana === 0) ? -6 : 1 - diaDaSemana;
+            
+            const dataSegunda = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate() + diferencaParaSegunda);
+            // Considerando as aulas de segunda a quinta (adiciona 3 dias à segunda-feira)
+            // Vou estender o filtro para a sexta-feira (+4) caso tenha alguma aula extra / reposição
+            const dataFimDaSemana = new Date(dataSegunda.getFullYear(), dataSegunda.getMonth(), dataSegunda.getDate() + 4); 
 
+            const strSegunda = toISODate(dataSegunda);
+            const strFimDaSemana = toISODate(dataFimDaSemana);
+
+            // Filtra as aulas que caem dentro da semana atual
+            const aulasDaSemana = aulas.filter(a => a.data >= strSegunda && a.data <= strFimDaSemana);
+            
             const painel = document.getElementById('painel');
-            let html = '';
+            let html = '<div class="titulo-semana">Aulas desta Semana</div>';
 
-            if (ultimaAula) {
+            // Verifica se o curso inteiro já acabou baseado na data de hoje
+            if (hojeStr > "2026-07-02") {
                 html += `
-                <div class="card past">
-                    <div class="status">Última Aula</div>
-                    <div class="date">${formatarDataBR(ultimaAula.data)}</div>
-                    <div class="details">
-                        <span class="highlight">${ultimaAula.uc}</span><br>
-                        Docente: ${ultimaAula.docente} | Aula ${ultimaAula.aula}
-                    </div>
-                </div>`;
-            }
-
-            if (aulaHoje) {
-                html += `
-                <div class="card today">
-                    <div class="status">🔥 Hoje</div>
-                    <div class="date">${formatarDataBR(aulaHoje.data)}</div>
-                    <div class="details">
-                        <span class="highlight">${aulaHoje.uc}</span><br>
-                        Docente: ${aulaHoje.docente} | Aula ${aulaHoje.aula}
-                    </div>
-                </div>`;
-            } else {
-                html += `
-                <div class="card today" style="background-color: #1e1e1e; border-color: #444;">
-                    <div class="status" style="color: #aaa;">Hoje</div>
-                    <div class="details">Sem aulas programadas ou o horário já encerrou!</div>
-                </div>`;
-            }
-
-            if (proximaAula) {
-                html += `
-                <div class="card next">
-                    <div class="status">Próxima Aula</div>
-                    <div class="date">${formatarDataBR(proximaAula.data)}</div>
-                    <div class="details">
-                        <span class="highlight">${proximaAula.uc}</span><br>
-                        Docente: ${proximaAula.docente} | Aula ${proximaAula.aula}
-                    </div>
-                </div>`;
-            }
-
-            // Verifica se o curso acabou de vez (todas as aulas são "passada")
-            if (!proximaAula && !aulaHoje && ultimaAula) {
-                 html += `
                 <div class="card today" style="border-left-color: #ffd700;">
                     <div class="status" style="color: #ffd700;">🎉 Curso Finalizado</div>
                     <div class="details">Parabéns! Vocês concluíram o cronograma.</div>
                 </div>`;
+            } else if (aulasDaSemana.length === 0) {
+                html += `
+                <div class="card" style="border-color: #444;">
+                    <div class="details" style="text-align: center;">Não há aulas programadas para esta semana (Seg a Qui).</div>
+                </div>`;
+            } else {
+                aulasDaSemana.forEach(aula => {
+                    const diaNome = getDiaDaSemana(aula.data);
+                    
+                    if (aula.data === hojeStr) {
+                        // Destaque de Hoje Livre do Limite de Horário
+                        html += `
+                        <div class="card today">
+                            <div class="status">🔥 Hoje - ${diaNome}</div>
+                            <div class="date">${formatarDataBR(aula.data)}</div>
+                            <div class="details">
+                                <span class="highlight">${aula.uc}</span><br>
+                                Docente: ${aula.docente} | Aula ${aula.aula}
+                            </div>
+                        </div>`;
+                    } else if (aula.data < hojeStr) {
+                        // Aula que já ocorreu nesta mesma semana
+                        html += `
+                        <div class="card past">
+                            <div class="status">✅ Concluída - ${diaNome}</div>
+                            <div class="date">${formatarDataBR(aula.data)}</div>
+                            <div class="details">
+                                <span class="highlight">${aula.uc}</span><br>
+                                Docente: ${aula.docente} | Aula ${aula.aula}
+                            </div>
+                        </div>`;
+                    } else {
+                        // Aula que ainda vai ocorrer nesta semana
+                        html += `
+                        <div class="card next">
+                            <div class="status">⏳ Programada - ${diaNome}</div>
+                            <div class="date">${formatarDataBR(aula.data)}</div>
+                            <div class="details">
+                                <span class="highlight">${aula.uc}</span><br>
+                                Docente: ${aula.docente} | Aula ${aula.aula}
+                            </div>
+                        </div>`;
+                    }
+                });
             }
 
             painel.innerHTML = html;
         }
 
         popularSelect();
-        renderizarGeral();
+        renderizarSemanaAtual();
     </script>
 </body>
 </html>
