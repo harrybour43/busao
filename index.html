@@ -33,14 +33,28 @@
         .search-box label { display: block; margin-bottom: 8px; font-weight: bold; color: #ccc; }
         .search-box select {
             width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #444;
-            background-color: #2c2c2c; color: white; font-size: 1em;
+            background-color: #2c2c2c; color: white; font-size: 1em; outline: none;
         }
 
         /* Estilos dos Cards Padrão */
-        .card { background-color: #1e1e1e; border-left: 5px solid #4caf50; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        .card { 
+            background-color: #1e1e1e; 
+            border-left: 5px solid #4caf50; 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3); 
+            cursor: pointer; 
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.5);
+        }
         .card.past { border-left-color: #888; opacity: 0.7; }
         .card.today { border-left-color: #e91e63; background-color: #2a1b20; transform: scale(1.02); }
+        .card.today:hover { transform: scale(1.03); }
         .card.next { border-left-color: #2196f3; }
+        
         .status { font-size: 0.85em; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; font-weight: bold; }
         .past .status { color: #aaaaaa; }
         .today .status { color: #ff4081; }
@@ -48,6 +62,17 @@
         .date { font-size: 1.2em; margin-bottom: 5px; color: #fff; }
         .details { font-size: 1em; color: #cccccc; line-height: 1.5; }
         .highlight { font-weight: bold; color: #ffffff; }
+
+        /* Dica de clique no card */
+        .click-hint {
+            font-size: 0.8em;
+            color: #777;
+            margin-top: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-style: italic;
+        }
 
         .titulo-semana {
             color: #fff;
@@ -92,14 +117,8 @@
             margin: 0 5px;
             transition: all 0.3s;
         }
-        .footer-nav button.active {
-            background-color: #4caf50;
-            color: white;
-            border-color: #4caf50;
-        }
-        .footer-nav button:hover:not(.active) {
-            background-color: #3c3c3c;
-        }
+        .footer-nav button.active { background-color: #4caf50; color: white; border-color: #4caf50; }
+        .footer-nav button:hover:not(.active) { background-color: #3c3c3c; }
 
         /* Estilos da Lista de Pesquisa */
         .uc-title { color: #ff9800; font-size: 1.1em; margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px;}
@@ -110,9 +129,12 @@
             display: flex; 
             flex-direction: column; 
             gap: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
         }
+        .lista-aulas li:hover { background-color: #2a2a2a; border-radius: 4px; }
         .lista-aulas li:last-child { border-bottom: none; }
-        .lista-aulas li.passada { opacity: 0.5; }
+        .lista-aulas li.passada { opacity: 0.6; }
         .lista-aulas li.proxima { 
             background-color: #1e2a38; 
             border-left: 4px solid #2196f3; 
@@ -120,22 +142,54 @@
             border-radius: 0 4px 4px 0;
             margin: 10px 0;
         }
+        .lista-aulas li.proxima:hover { background-color: #283747; }
         .badge-proxima { color: #64b5f6; font-size: 0.8em; font-weight: bold; text-transform: uppercase; margin-left: 10px; }
         .badge-hoje { color: #ff4081; font-size: 0.8em; font-weight: bold; text-transform: uppercase; margin-left: 10px; }
         .aula-docente { font-size: 0.9em; color: #aaa; }
 
-        .uc-encerrada {
-            background-color: #1b2a20;
-            color: #4caf50;
-            padding: 12px;
-            text-align: center;
-            font-weight: bold;
-            border-radius: 4px;
-            margin-bottom: 15px;
-            border: 1px solid #4caf50;
-            font-size: 0.9em;
-            letter-spacing: 0.5px;
+        .uc-encerrada { background-color: #1b2a20; color: #4caf50; padding: 12px; text-align: center; font-weight: bold; border-radius: 4px; margin-bottom: 15px; border: 1px solid #4caf50; font-size: 0.9em; letter-spacing: 0.5px; }
+
+        /* Estilos do Modal (Hover de Conteúdo) */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+            backdrop-filter: blur(3px);
         }
+        .modal-box {
+            background: #1e1e1e;
+            border-top: 5px solid #9c27b0;
+            padding: 25px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            position: relative;
+            animation: slideUp 0.3s ease-out;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .modal-close {
+            position: absolute;
+            top: 15px; right: 15px;
+            background: none; border: none;
+            color: #888; font-size: 1.8em;
+            cursor: pointer; line-height: 1;
+        }
+        .modal-close:hover { color: #fff; }
+        .modal-header { border-bottom: 1px solid #333; padding-bottom: 15px; margin-bottom: 15px; }
+        .modal-date { font-size: 0.9em; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+        .modal-uc { font-size: 1.2em; font-weight: bold; color: #fff; margin-bottom: 5px; }
+        .modal-prof { font-size: 1em; color: #9c27b0; font-weight: bold; }
+        .modal-body { font-size: 1.05em; color: #ddd; line-height: 1.6; white-space: pre-wrap; }
     </style>
 </head>
 <body>
@@ -161,6 +215,20 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="modalConteudo" onclick="fecharModal(event)">
+        <div class="modal-box">
+            <button class="modal-close" onclick="fecharModalBtn()">&times;</button>
+            <div class="modal-header">
+                <div class="modal-date" id="modalData">Data</div>
+                <div class="modal-uc" id="modalUC">UC e Aula</div>
+                <div class="modal-prof" id="modalProf">Professor</div>
+            </div>
+            <div class="modal-body" id="modalTexto">
+                Conteúdo da aula carregando...
+            </div>
+        </div>
+    </div>
+
     <script>
         const nomesUC = {
             "UC1": "Captar imagens fotográficas digitais", "UC2": "Iluminar cenas fotográficas",
@@ -170,6 +238,30 @@
             "UC10": "Propaganda e Publicidade", "UC11": "Paisagem, Arquitetura e Interiores",
             "UC12": "Realizar ensaios fotográficos", "UC13": "Elaborar portfólio fotográfico",
             "UC14": "Projeto Integrador"
+        };
+
+        // ==========================================
+        // ÁREA DE PLANEJAMENTO DAS AULAS
+        // Formato: "YYYY-MM-DD": "Seu texto aqui. Pode usar \n para pular linha."
+        // ==========================================
+        const conteudosPrevistos = {
+            "2025-04-14": "Introdução à Manipulação de Imagens.\nApresentação da interface do Photoshop, atalhos básicos e conceitos de camadas (layers).",
+            "2025-04-15": "Conhecendo a Câmera Digital.\nTriângulo de exposição (ISO, Diafragma, Obturador) e balanço de branco.",
+            "2025-04-16": "Prática fotográfica na área externa.\nAplicação do triângulo de exposição na prática.",
+            
+            // UC13 e Finalizações (Conforme enviado)
+            "2026-01-27": "Introdução a Portfólio e plataformas de criação de site.",
+            "2026-02-03": "Contrato e direitos autorais.",
+            "2026-02-10": "Empreendedorismo.",
+            "2026-02-11": "Coberta do espetáculo \"Heliogabalo\".",
+            "2026-02-12": "Edição das fotos do acervo e início de montagem do site.",
+            "2026-02-24": "Empreendedorismo.",
+            "2026-03-26": "Montagem de portfólio.",
+            "2026-04-29": "EXPOSIÇÃO PI 41M.",
+            "2026-04-30": "Portfólio e acompanhamento PI 43M.",
+            "2026-05-18": "Portfólio e acompanhamento PI 43M.",
+            "2026-07-01": "Portfólio - Apresentação.",
+            "2026-07-02": "EXPOSIÇÃO PI 43M."
         };
 
         const rawAulas = [
@@ -244,7 +336,9 @@
 
         const aulas = rawAulas.map(linha => {
             const [data, uc, docente, aula] = linha.split('|');
-            return { data, codigoUC: uc, uc: `${uc} - ${nomesUC[uc] || ''}`, docente, aula };
+            const ucFormatada = `${uc} - ${nomesUC[uc] || ''}`.replace(/'/g, "\\'"); 
+            const docFormatado = docente.replace(/'/g, "\\'");
+            return { data, codigoUC: uc, uc: ucFormatada, docente: docFormatado, aula };
         });
 
         function toISODate(d) {
@@ -274,6 +368,37 @@
             return "futura";
         }
 
+        // ==========================================
+        // Lógica do Modal
+        // ==========================================
+        function abrirModal(dataISO, ucNome, profNome, numAula) {
+            const modal = document.getElementById('modalConteudo');
+            
+            document.getElementById('modalData').innerText = `${getDiaDaSemana(dataISO)}, ${formatarDataBR(dataISO)}`;
+            document.getElementById('modalUC').innerText = `${ucNome} - Aula ${numAula}`;
+            document.getElementById('modalProf').innerText = `Prof. ${profNome}`;
+            
+            const conteudo = conteudosPrevistos[dataISO] || "Conteúdo detalhado a ser definido para esta aula.";
+            document.getElementById('modalTexto').innerText = conteudo;
+
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden'; 
+        }
+
+        function fecharModal(event) {
+            if (event.target.id === 'modalConteudo') {
+                fecharModalBtn();
+            }
+        }
+
+        function fecharModalBtn() {
+            document.getElementById('modalConteudo').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        // ==========================================
+        // Lógica Principal da Página
+        // ==========================================
         function popularSelect() {
             const select = document.getElementById('filtroUC');
             for (const [codigo, nome] of Object.entries(nomesUC)) {
@@ -284,6 +409,13 @@
             }
         }
 
+        window.limparBusca = function() {
+            document.getElementById('filtroUC').value = "";
+            document.getElementById('resultado-pesquisa').style.display = 'none';
+            document.getElementById('painel').style.display = 'flex';
+            document.getElementById('rodape-semanas').style.display = 'flex';
+        }
+
         document.getElementById('filtroUC').addEventListener('change', function(e) {
             const ucSelecionada = e.target.value;
             const painelGeral = document.getElementById('painel');
@@ -291,20 +423,21 @@
             const rodapeSemanas = document.getElementById('rodape-semanas');
 
             if (!ucSelecionada) {
-                painelPesquisa.style.display = 'none';
-                painelGeral.style.display = 'flex';
-                rodapeSemanas.style.display = 'flex'; // Mostra os botões novamente
+                limparBusca();
                 return;
             }
 
             painelGeral.style.display = 'none';
-            rodapeSemanas.style.display = 'none'; // Esconde os botões de semana na pesquisa
+            rodapeSemanas.style.display = 'none';
             painelPesquisa.style.display = 'flex';
 
             const aulasDaUC = aulas.filter(a => a.codigoUC === ucSelecionada);
             const todasEncerradas = aulasDaUC.every(aula => getStatusAulaPesquisa(aula.data) === "passada");
 
             let html = `<div class="card" style="border-left-color: #ff9800;">
+                            <button onclick="limparBusca()" style="background: none; border: 1px solid #ff9800; color: #ff9800; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-bottom: 15px; font-weight: bold; font-size: 0.9em; display: inline-flex; align-items: center; gap: 5px;">
+                                ⬅ Voltar para a Semana
+                            </button>
                             <div class="uc-title">${nomesUC[ucSelecionada]}</div>`;
             
             if (todasEncerradas && aulasDaUC.length > 0) {
@@ -326,7 +459,7 @@
                 }
 
                 html += `
-                    <li class="${liClass}">
+                    <li class="${liClass}" onclick="abrirModal('${aula.data}', '${aula.uc}', '${aula.docente}', '${aula.aula}')">
                         <div><span style="font-size: 1.1em; font-weight: bold; color: #fff;">${formatarDataBR(aula.data)}</span> ${badge}</div>
                         <div class="aula-docente">Prof: <strong>${aula.docente}</strong> | Aula ${aula.aula}</div>
                     </li>
@@ -341,29 +474,20 @@
             painelPesquisa.innerHTML = html;
         });
 
-        // ==========================================
-        // Lógica de Renderização por Semana (Com Offset)
-        // ==========================================
         function mudarSemana(offset) {
-            // Atualiza botões ativos
             document.getElementById('btn-passada').classList.toggle('active', offset === -1);
             document.getElementById('btn-atual').classList.toggle('active', offset === 0);
             document.getElementById('btn-que-vem').classList.toggle('active', offset === 1);
-
             renderizarSemana(offset);
         }
 
         function renderizarSemana(offsetSemanas) {
             const agora = new Date();
             const hojeStr = toISODate(agora);
-
             const diaDaSemana = agora.getDay();
             const diferencaParaSegunda = (diaDaSemana === 0) ? -6 : 1 - diaDaSemana;
-            
-            // Adiciona ou remove 7 dias dependendo do offset
             const diasOffset = offsetSemanas * 7;
             
-            // Definindo 12h para evitar problemas de fuso horário pulando o dia
             const dataSegundaTarget = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate() + diferencaParaSegunda + diasOffset, 12, 0, 0);
             const dataSextaTarget = new Date(dataSegundaTarget.getFullYear(), dataSegundaTarget.getMonth(), dataSegundaTarget.getDate() + 4, 12, 0, 0);
 
@@ -388,46 +512,36 @@
                 aulasDaSemana.forEach(aula => {
                     const diaNome = getDiaDaSemana(aula.data);
                     
+                    let statusHtml, cardClass;
                     if (aula.data === hojeStr) {
-                        html += `
-                        <div class="card today">
-                            <div class="status">🔥 Hoje - ${diaNome}</div>
-                            <div class="date">${formatarDataBR(aula.data)}</div>
-                            <div class="details">
-                                <span class="highlight">${aula.uc}</span><br>
-                                Docente: ${aula.docente} | Aula ${aula.aula}
-                            </div>
-                        </div>`;
+                        cardClass = "today";
+                        statusHtml = `🔥 Hoje - ${diaNome}`;
                     } else if (aula.data < hojeStr) {
-                        html += `
-                        <div class="card past">
-                            <div class="status">✅ Concluída - ${diaNome}</div>
-                            <div class="date">${formatarDataBR(aula.data)}</div>
-                            <div class="details">
-                                <span class="highlight">${aula.uc}</span><br>
-                                Docente: ${aula.docente} | Aula ${aula.aula}
-                            </div>
-                        </div>`;
+                        cardClass = "past";
+                        statusHtml = `✅ Concluída - ${diaNome}`;
                     } else {
-                        html += `
-                        <div class="card next">
-                            <div class="status">⏳ Programada - ${diaNome}</div>
-                            <div class="date">${formatarDataBR(aula.data)}</div>
-                            <div class="details">
-                                <span class="highlight">${aula.uc}</span><br>
-                                Docente: ${aula.docente} | Aula ${aula.aula}
-                            </div>
-                        </div>`;
+                        cardClass = "next";
+                        statusHtml = `⏳ Programada - ${diaNome}`;
                     }
+
+                    html += `
+                    <div class="card ${cardClass}" onclick="abrirModal('${aula.data}', '${aula.uc}', '${aula.docente}', '${aula.aula}')">
+                        <div class="status">${statusHtml}</div>
+                        <div class="date">${formatarDataBR(aula.data)}</div>
+                        <div class="details">
+                            <span class="highlight">${aula.uc}</span><br>
+                            Docente: ${aula.docente} | Aula ${aula.aula}
+                        </div>
+                        <div class="click-hint">🖱️ Clique para ver o planejamento</div>
+                    </div>`;
                 });
             }
 
             painel.innerHTML = html;
         }
 
-        // Inicializa a página
         popularSelect();
-        mudarSemana(0); // Carrega a semana atual por padrão
+        mudarSemana(0);
     </script>
 </body>
 </html>
